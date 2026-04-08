@@ -1,4 +1,4 @@
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@100;200;300;400;500;600;700;800;900&family=Bebas+Neue&family=Barlow+Condensed:wght@300;400;600;700;800;900&family=DM+Serif+Display:ital@0;1&display=swap');
 
 *, *::before, *::after {
   box-sizing: border-box;
@@ -93,10 +93,11 @@ a { color: inherit; text-decoration: none; }
   top: 0; left: 0; right: 0;
   z-index: 200;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
   padding: 1.6rem 3rem;
   color: #fff;
+  mix-blend-mode: difference;
 }
 
 .nav-logo-text {
@@ -112,9 +113,7 @@ a { color: inherit; text-decoration: none; }
   display: flex;
   gap: 3rem;
   list-style: none;
-  position: absolute;
-  left: 50%;
-  transform: translateX(-50%);
+  margin-right: 3rem;
 }
 .nav-links a {
   font-size: 0.7rem;
@@ -122,7 +121,7 @@ a { color: inherit; text-decoration: none; }
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #fff;
-  opacity: 0.45;
+  opacity: 0.6;
   transition: opacity 0.3s;
 }
 .nav-links a:hover { opacity: 1; }
@@ -130,7 +129,7 @@ a { color: inherit; text-decoration: none; }
 /* Menu button */
 .nav-menu-btn {
   background: none;
-  border: 1px solid rgba(255,255,255,0.2);
+  border: 1px solid rgba(255,255,255,0.35);
   color: #fff;
   font-family: 'Inter', sans-serif;
   font-size: 0.65rem;
@@ -232,22 +231,19 @@ a { color: inherit; text-decoration: none; }
   pointer-events: none;
 }
 
-/* Brand top-left */
-.hero-brand {
-  position: absolute;
-  top: 2.2rem;
+/* Site logo — fixed, always top-left */
+.site-logo {
+  position: fixed;
+  top: 1.8rem;
   left: 3rem;
-  z-index: 3;
-  display: flex;
-  flex-direction: column;
-  line-height: 1.3;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.65rem;
-  font-weight: 600;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
+  z-index: 201;
+  font-family: 'DM Serif Display', serif;
+  font-size: 1.4rem;
+  font-weight: 400;
+  letter-spacing: 0.06em;
   color: #fff;
-  opacity: 0.5;
+  pointer-events: none;
+  mix-blend-mode: difference;
 }
 
 /* Center layout */
@@ -276,8 +272,7 @@ a { color: inherit; text-decoration: none; }
   align-items: baseline;
   gap: 0;
   line-height: 1;
-  /* Allow O to overflow when scaling */
-  overflow: visible;
+  overflow: hidden;
 }
 
 /* All NOA letters */
@@ -285,20 +280,39 @@ a { color: inherit; text-decoration: none; }
   display: inline-block;
   font-family: 'Bebas Neue', sans-serif;
   font-weight: 400;
-  font-size: clamp(7rem, 28vw, 32rem);
+  font-size: clamp(7rem, 30vw, 34rem);
   line-height: 0.82;
-  letter-spacing: -0.01em;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
   color: #fff;
-  transform-origin: center center;
-  will-change: transform;
 }
 
-/* O specifically — white fill so it covers everything as it scales */
-.hw-o {
+/* Dot after NOA */
+.hw-dot {
+  font-family: 'DM Serif Display', serif;
+  font-size: clamp(5rem, 22vw, 25rem);
   color: #fff;
-  position: relative;
-  z-index: 10;
+  line-height: 0.82;
+  align-self: flex-end;
+  padding-bottom: 0.05em;
+  opacity: 0.9;
+}
+
+/* Software Solutions subtitle */
+.hero-sub-clip {
+  margin-top: 0.4rem;
+  line-height: 1;
+}
+
+.hw-sub-line {
+  display: block;
+  font-family: 'Barlow Condensed', sans-serif;
+  font-weight: 300;
+  font-size: clamp(1.2rem, 3.5vw, 4rem);
+  letter-spacing: 0.45em;
+  text-transform: uppercase;
+  color: #fff;
+  opacity: 0.45;
 }
 
 /* ── Row 2: thin line + "SOFTWARE" ── */
@@ -394,6 +408,33 @@ a { color: inherit; text-decoration: none; }
   51%      { transform-origin: bottom; }
 }
 
+/* Cloud Divider */
+.cloud-divider {
+  position: relative;
+  background: #000;
+  margin-bottom: -2px;
+  line-height: 0;
+  overflow: hidden;
+}
+
+.cloud-bg-top {
+  height: 80px;
+  background: #000;
+}
+
+.cloud-svg {
+  display: block;
+  width: 100%;
+  height: 220px;
+  position: relative;
+  z-index: 55; /* above the traveling dot (z:50) so ball disappears behind clouds */
+}
+
+.cloud-bg-bottom {
+  height: 0;
+  background: #fff;
+}
+
 /* Marquee */
 .marquee-section {
   padding: 4rem 0;
@@ -435,8 +476,8 @@ a { color: inherit; text-decoration: none; }
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  padding: 10rem 3rem;
+  justify-content: flex-start;
+  padding: 18rem 3rem 6rem;
 }
 .about-label {
   font-size: 0.7rem;
@@ -451,76 +492,134 @@ a { color: inherit; text-decoration: none; }
   font-weight: 200;
   line-height: 1.35;
   letter-spacing: -0.02em;
-  max-width: 950px;
+  max-width: 100%;
+  width: 100%;
   color: #111;
 }
 .about-text strong { font-weight: 800; color: #000; }
 .about-text em { font-style: normal; opacity: 0.4; color: #111; }
 
-/* Services */
-.services-section { padding: 8rem 0; }
-.services-header {
-  padding: 0 3rem;
-  margin-bottom: 4rem;
+/* Services — horizontal scroll */
+.services-wrap {
+  width: 100%;
+  overflow: hidden;
+  background: #000;
+}
+
+.services-track {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-end;
+  flex-direction: row;
+  align-items: stretch;
+  height: 100vh;
+  will-change: transform;
 }
-.services-title {
-  font-size: clamp(3rem, 6vw, 6rem);
-  font-weight: 900;
-  letter-spacing: -0.04em;
+
+/* Each panel */
+.services-panel {
+  flex-shrink: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  padding: 4rem;
+  border-right: 1px solid rgba(255,255,255,0.08);
+  box-sizing: border-box;
+}
+
+/* Title panel */
+.services-panel-title {
+  justify-content: center;
+  gap: 1rem;
+}
+
+.services-eyebrow {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.3em;
   text-transform: uppercase;
-  line-height: 0.9;
-  color: #000;
-}
-.services-count {
-  font-size: 0.75rem;
+  color: #fff;
   opacity: 0.4;
-  letter-spacing: 0.15em;
 }
-.service-item {
-  border-top: 1px solid var(--line);
-  padding: 2.5rem 3rem;
-  display: grid;
-  grid-template-columns: 60px 1fr 320px 40px;
-  align-items: center;
-  gap: 3rem;
-  cursor: pointer;
+
+.services-big-title {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(6rem, 18vw, 18rem);
+  font-weight: 400;
+  line-height: 0.85;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  color: #fff;
+  margin: 0;
+}
+
+.services-hint {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  letter-spacing: 0.15em;
+  color: #fff;
+  opacity: 0.3;
+  margin-top: 1rem;
+}
+
+/* Service item panel */
+.services-panel-item {
+  justify-content: flex-end;
+  gap: 1.5rem;
   position: relative;
   overflow: hidden;
+  cursor: pointer;
+  transition: background 0.4s;
 }
-.service-item::before {
+
+.services-panel-item::before {
   content: '';
   position: absolute;
   inset: 0;
   background: #fff;
-  transform: translateX(-101%);
+  transform: translateY(101%);
   transition: transform 0.5s cubic-bezier(0.76,0,0.24,1);
-  z-index: 0;
 }
-.service-item:hover::before { transform: translateX(0); }
-.service-item > * { position: relative; z-index: 1; transition: color 0.3s; color: #fff; }
-.service-item:hover > * { color: #000; }
-.service-num {
-  font-size: 0.75rem;
+
+.services-panel-item:hover::before { transform: translateY(0); }
+.services-panel-item:hover .sp-num,
+.services-panel-item:hover .sp-name,
+.services-panel-item:hover .sp-desc { color: #000; }
+
+.sp-num {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.7rem;
+  letter-spacing: 0.15em;
+  color: #fff;
   opacity: 0.3;
-  letter-spacing: 0.1em;
-  font-weight: 500;
+  position: relative;
+  transition: color 0.3s;
 }
-.service-name {
-  font-size: clamp(1.4rem, 2.5vw, 2.2rem);
-  font-weight: 700;
-  letter-spacing: -0.02em;
+
+.sp-name {
+  font-family: 'Bebas Neue', sans-serif;
+  font-size: clamp(3rem, 7vw, 7rem);
+  font-weight: 400;
+  letter-spacing: 0.02em;
   text-transform: uppercase;
+  color: #fff;
+  line-height: 0.9;
+  position: relative;
+  transition: color 0.3s;
 }
-.service-desc {
-  font-size: 0.85rem;
+
+.sp-desc {
+  font-family: 'Inter', sans-serif;
+  font-size: 0.9rem;
   font-weight: 300;
   line-height: 1.6;
+  color: #fff;
   opacity: 0.5;
-  text-align: right;
+  max-width: 380px;
+  position: relative;
+  transition: color 0.3s;
 }
+
 .service-arrow {
   font-size: 1.2rem;
   opacity: 0;

@@ -6,9 +6,6 @@ export default function Nav() {
   return (
     <>
       <nav className="nav">
-        {/* Left: logo */}
-        <div className="nav-logo-text">NSS</div>
-
         {/* Center: links */}
         <ul className="nav-links">
           <li><a href="#hero">Home</a></li>
@@ -28,7 +25,6 @@ export default function Nav() {
 
       {/* Full screen menu overlay */}
       <div className={`nav-overlay ${menuOpen ? 'active' : ''}`}>
-        <button className="nav-overlay-close" onClick={() => setMenuOpen(false)}>✕</button>
         <ul className="nav-overlay-links">
           <li><a href="#hero"     onClick={() => setMenuOpen(false)}>Home</a></li>
           <li><a href="#about"    onClick={() => setMenuOpen(false)}>About</a></li>

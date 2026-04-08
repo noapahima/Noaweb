@@ -9,6 +9,8 @@ import Stats from './components/Stats';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Loader from './components/Loader';
+import TravelingDot from './components/TravelingDot';
+import CloudDivider from './components/CloudDivider';
 
 export default function App() {
   const [loaded, setLoaded] = useState(false);
@@ -35,6 +37,8 @@ export default function App() {
       {!loaded && <Loader onComplete={() => setLoaded(true)} />}
       <div className="noise" />
       <Cursor />
+      <div className="site-logo">Noa</div>
+      <TravelingDot />
       <Nav />
       <Hero />
       <About />
