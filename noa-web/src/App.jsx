@@ -1,16 +1,16 @@
 import { useEffect, useState } from 'react';
 import Lenis from 'lenis';
+import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import { gsap } from 'gsap';
+gsap.registerPlugin(ScrollTrigger);
 import Cursor from './components/Cursor';
 import Nav from './components/Nav';
 import Hero from './components/Hero';
-import About from './components/About';
 import Services from './components/Services';
 import Stats from './components/Stats';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Loader from './components/Loader';
-import TravelingDot from './components/TravelingDot';
-import CloudDivider from './components/CloudDivider';
 
 export default function App() {
   const [loaded, setLoaded] = useState(false);
@@ -23,11 +23,10 @@ export default function App() {
       smooth: true,
     });
 
-    const raf = (time) => {
-      lenis.raf(time);
-      requestAnimationFrame(raf);
-    };
-    requestAnimationFrame(raf);
+    // Connect Lenis to ScrollTrigger
+    lenis.on('scroll', ScrollTrigger.update);
+    gsap.ticker.add((time) => lenis.raf(time * 1000));
+    gsap.ticker.lagSmoothing(0);
 
     return () => lenis.destroy();
   }, [loaded]);
@@ -38,10 +37,8 @@ export default function App() {
       <div className="noise" />
       <Cursor />
       <div className="site-logo">Noa</div>
-      <TravelingDot />
       <Nav />
       <Hero />
-      <About />
       <Services />
       <Stats />
       <Contact />

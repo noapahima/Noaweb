@@ -12,37 +12,56 @@ export default function About() {
 
   useEffect(() => {
     const el = textRef.current;
-    if (!el) return;
+    const section = sectionRef.current;
+    if (!el || !section) return;
 
     el.innerHTML = text
       .split(' ')
-      .map(word => `<span class="about-char-inner" style="display:inline-block;white-space:pre;">${word} </span>`)
+      .map(w => `<span class="about-word" style="display:inline-block;white-space:pre;color:#111;">${w} </span>`)
       .join('');
 
-    const chars = el.querySelectorAll('.about-char-inner');
-    gsap.set(chars, { x: 120, opacity: 0 });
+    const spans = Array.from(el.querySelectorAll('.about-word'));
+
+    // Group into lines by offsetTop
+    const lineMap = new Map();
+    spans.forEach(s => {
+      const top = s.offsetTop;
+      if (!lineMap.has(top)) lineMap.set(top, []);
+      lineMap.get(top).push(s);
+    });
+    const lines = Array.from(lineMap.values());
+
+    lines.forEach(line => gsap.set(line, { x: 500, opacity: 0 }));
 
     const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: section,
+        start: 'top top',
+        end: '+=900',
+        pin: true,
+        pinSpacing: false,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+      });
+
+      // Text scrub starts early — as section enters viewport
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: sectionRef.current,
-          start: 'top top',
-          end: '+=1000',
-          scrub: 1,
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
+          trigger: section,
+          start: 'top 100%',
+          end: 'top 20%',
+          scrub: 0.5,
         },
       });
 
-      tl.to(chars, {
-        x:        0,
-        opacity:  1,
-        ease:     'none',
-        stagger:  0.006,
-        duration: 0.02,
+      const slice = 1 / lines.length;
+      lines.forEach((line, i) => {
+        tl.to(line,
+          { x: 0, opacity: 1, ease: 'power3.out', duration: slice },
+          i * slice * 0.4
+        );
       });
-    }, sectionRef);
+    });
 
     return () => ctx.revert();
   }, []);
@@ -52,7 +71,7 @@ export default function About() {
       className="about-section"
       id="about"
       ref={sectionRef}
-      style={{ background: '#fff', color: '#111', minHeight: '130vh' }}
+      style={{ background: '#fff', color: '#111', minHeight: '100vh' }}
     >
       <p className="about-label">// About</p>
       <p className="about-text" ref={textRef} />

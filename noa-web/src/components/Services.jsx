@@ -4,6 +4,8 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
+const aboutText = "We are Noa Software Solutions — a boutique studio crafting custom technology that gives businesses an unfair advantage. From AI-powered workflows to pixel-perfect interfaces, we turn ambitious ideas into real products that scale.";
+
 const services = [
   { num: '01', name: 'Custom CRM',            desc: 'Bespoke lead management, automated pipelines, and advanced analytics tailored to your exact business needs.' },
   { num: '02', name: 'Business Automations',  desc: 'End-to-end workflow optimization using Zapier, Make, and custom API integrations to eliminate manual tasks.' },
@@ -14,15 +16,30 @@ const services = [
 ];
 
 export default function Services() {
-  const wrapRef  = useRef(null);
-  const trackRef = useRef(null);
+  const wrapRef     = useRef(null);
+  const trackRef    = useRef(null);
+  const aboutTxtRef = useRef(null);
 
   useEffect(() => {
     const wrap  = wrapRef.current;
     const track = trackRef.current;
     if (!wrap || !track) return;
 
-    // Total horizontal distance to scroll
+    const el = aboutTxtRef.current;
+    if (el) {
+      el.innerHTML = aboutText
+        .split(' ')
+        .map(w => `<span class="about-word" style="display:inline-block;white-space:pre;color:#111;">${w} </span>`)
+        .join('');
+      gsap.set(el.querySelectorAll('.about-word'), { x: 300, opacity: 0 });
+      ScrollTrigger.create({
+        trigger: wrap, start: 'top 80%', once: true,
+        onEnter: () => gsap.to(el.querySelectorAll('.about-word'), {
+          x: 0, opacity: 1, duration: 1.2, ease: 'power3.out', stagger: 0.03,
+        }),
+      });
+    }
+
     const getScrollAmt = () => track.scrollWidth - window.innerWidth;
 
     const ctx = gsap.context(() => {
@@ -48,14 +65,19 @@ export default function Services() {
     <div className="services-wrap" id="services" ref={wrapRef}>
       <div className="services-track" ref={trackRef}>
 
-        {/* First panel — title */}
+        <div className="services-panel services-panel-white" id="about">
+          <p className="about-label">// About</p>
+          <p className="about-text" ref={aboutTxtRef} />
+        </div>
+
+        <div className="services-panel services-panel-white" />
+
         <div className="services-panel services-panel-title">
           <span className="services-eyebrow">What We Do</span>
           <h2 className="services-big-title">Services</h2>
           <span className="services-hint">→ scroll</span>
         </div>
 
-        {/* One panel per service */}
         {services.map((s) => (
           <div className="services-panel services-panel-item" key={s.num}>
             <span className="sp-num">{s.num}</span>
@@ -63,6 +85,7 @@ export default function Services() {
             <p className="sp-desc">{s.desc}</p>
           </div>
         ))}
+
       </div>
     </div>
   );
