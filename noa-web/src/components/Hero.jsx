@@ -25,7 +25,8 @@ export default function Hero() {
         const startY = r.top  + r.height * 0.5;
         const endY   = Math.max(startY + window.innerHeight * 0.6, window.innerHeight * 0.9);
 
-        // Place traveling dot on top of static dot
+        // Hide static dot — traveling dot takes over
+        gsap.set(staticDot, { opacity: 0 });
         gsap.set(travelDot, { x: startX, y: startY, opacity: 1 });
 
         // Scrub fall as hero scrolls away
@@ -37,15 +38,9 @@ export default function Hero() {
           onUpdate: (self) => {
             const p    = self.progress;
             const newY = startY + (endY - startY) * p;
-            if (p > 0.005) {
-              const whitePanelTop = window.innerHeight * (1 - p);
-              const color = newY >= whitePanelTop ? '#000' : '#fff';
-              gsap.set(staticDot, { opacity: 0 });
-              gsap.set(travelDot, { x: startX, y: newY, opacity: 1, background: color });
-            } else {
-              gsap.set(staticDot, { opacity: 1 });
-              gsap.set(travelDot, { x: startX, y: startY, opacity: 0, background: '#fff' });
-            }
+            const whitePanelTop = window.innerHeight * (1 - p);
+            const color = newY >= whitePanelTop ? '#000' : '#fff';
+            gsap.set(travelDot, { x: startX, y: newY, background: color });
           },
           onLeave: () => {
             gsap.set(travelDot, { background: '#000' });
