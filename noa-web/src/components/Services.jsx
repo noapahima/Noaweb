@@ -84,7 +84,7 @@ export default function Services() {
     const BY      = vh / 2 - 10;       // ball Y (matches hero landing)
     const PANEL_W = vw * 0.65;
     const PANEL_H = vh;
-    const BUDGET  = vw * 2.2;          // scroll budget per service
+    const BUDGET  = vw * 3.5;          // scroll budget per service
     const TOTAL   = BUDGET * services.length;
 
     // 3 dot elements rotated through roles (opening / waiting / entering)
@@ -97,8 +97,12 @@ export default function Services() {
     gsap.set(dots[0], { x: vw / 2 - 10, y: BY, opacity: 1 });
     gsap.set(dots[1], { x: vw * 0.85,   y: BY, opacity: 0 });
     gsap.set(dots[2], { x: vw + 20,     y: BY, opacity: 0 });
-    gsap.set(panel, { x: vw / 2 - 10, y: BY, width: 20, height: 20, borderRadius: '50%', opacity: 0 });
+    // Panel is always full size, positioned at 0,0 — clip-path controls visibility
+    gsap.set(panel, { x: 0, y: 0, width: PANEL_W, height: PANEL_H, borderRadius: 0, clipPath: `circle(0px at ${OPEN_X + 10}px ${BY + 10}px)`, opacity: 1 });
     contentRefs.current.forEach(c => c && (c.style.opacity = '0'));
+
+    // Max radius to cover full panel from any ball position
+    const maxR = Math.sqrt(PANEL_W * PANEL_W + PANEL_H * PANEL_H);
 
     ScrollTrigger.create({
       trigger: expand,
@@ -118,14 +122,19 @@ export default function Services() {
         const isFirst = idx === 0;
 
         // Phase breakpoints
-        const PH_SLIDE = isFirst ? 0.18 : 0;
-        const PH_EXP   = PH_SLIDE + 0.28;
-        const PH_SHOW  = PH_EXP   + 0.22;
-        const PH_CLOSE = PH_SHOW  + 0.22;
+        const PH_SLIDE = isFirst ? 0.12 : 0;
+        const PH_EXP   = PH_SLIDE + 0.18;
+        const PH_SHOW  = PH_EXP   + 0.44;  // longer open time
+        const PH_CLOSE = PH_SHOW  + 0.16;
         // EXIT: PH_CLOSE → 1.0
 
         // Reset content
         contentRefs.current.forEach((c, i) => c && (c.style.opacity = i === idx ? '' : '0'));
+
+        // clip-path origin = center of opening dot
+        const ox = OPEN_X + 10;
+        const oy = BY + 10;
+        const clip = r => `circle(${r}px at ${ox}px ${oy}px)`;
 
         // ── SLIDE (service 0 only) ──────────────────────────────────────
         if (isFirst && sp < PH_SLIDE) {
@@ -133,26 +142,18 @@ export default function Services() {
           gsap.set(op, { x: lerp(vw / 2 - 10, OPEN_X, t), y: BY, opacity: 1 });
           gsap.set(wa, { x: lerp(vw * 0.85, WAIT_X, t), y: BY, opacity: t });
           gsap.set(en, { opacity: 0 });
-          gsap.set(panel, { opacity: 0 });
+          gsap.set(panel, { clipPath: clip(0) });
           if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '0';
           return;
         }
 
-        // ── EXPAND ──────────────────────────────────────────────────────
+        // ── EXPAND: circle grows from dot to cover full panel ────────────
         if (sp < PH_EXP) {
           const t = eIO((sp - PH_SLIDE) / 0.28);
-          // Teleport entering dot off screen right while hidden
           gsap.set(en, { x: vw + 20, y: BY, opacity: 0 });
           gsap.set(op, { opacity: 0 });
           gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
-          gsap.set(panel, {
-            x: lerp(OPEN_X, 0, t),
-            y: lerp(BY, 0, t),
-            width:        lerp(20, PANEL_W, t),
-            height:       lerp(20, PANEL_H, t),
-            borderRadius: lerp(50, 0, t) + '%',
-            opacity:      1,
-          });
+          gsap.set(panel, { clipPath: clip(lerp(10, maxR, t)) });
           const ct = Math.max(0, (t - 0.72) / 0.28);
           if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = ct;
           return;
@@ -163,25 +164,18 @@ export default function Services() {
           gsap.set(en, { opacity: 0 });
           gsap.set(op, { opacity: 0 });
           gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
-          gsap.set(panel, { x: 0, y: 0, width: PANEL_W, height: PANEL_H, borderRadius: '0%', opacity: 1 });
+          gsap.set(panel, { clipPath: clip(maxR) });
           if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '1';
           return;
         }
 
-        // ── CLOSE ───────────────────────────────────────────────────────
+        // ── CLOSE: circle shrinks back to dot ───────────────────────────
         if (sp < PH_CLOSE) {
           const t = eIO((sp - PH_SHOW) / 0.22);
           gsap.set(en, { opacity: 0 });
           gsap.set(op, { opacity: 0 });
           gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
-          gsap.set(panel, {
-            x: lerp(0, OPEN_X, t),
-            y: lerp(0, BY, t),
-            width:        lerp(PANEL_W, 20, t),
-            height:       lerp(PANEL_H, 20, t),
-            borderRadius: lerp(0, 50, t) + '%',
-            opacity:      1,
-          });
+          gsap.set(panel, { clipPath: clip(lerp(maxR, 10, t)) });
           const ct = Math.max(0, 1 - t / 0.3);
           if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = ct;
           return;
@@ -191,12 +185,9 @@ export default function Services() {
         const t = eIO((sp - PH_CLOSE) / (1 - PH_CLOSE));
         const hasNext = idx < services.length - 1;
 
-        gsap.set(panel, { opacity: 0 });
-        // opening dot exits left
+        gsap.set(panel, { clipPath: clip(0) });
         gsap.set(op, { x: lerp(OPEN_X, -40, t), y: BY, opacity: 1 });
-        // waiting dot slides to left (becomes next opener)
         gsap.set(wa, { x: lerp(WAIT_X, OPEN_X, t), y: BY, opacity: 1 });
-        // entering dot comes in from right (becomes next waiter)
         if (hasNext) {
           gsap.set(en, { x: lerp(vw + 20, WAIT_X, t), y: BY, opacity: t });
         } else {
@@ -232,6 +223,12 @@ export default function Services() {
 
       {/* ── Service expand section ── */}
       <div ref={expandRef} className="service-expand-section">
+
+        {/* Static title — bottom right, never moves */}
+        <div className="service-expand-title">
+          <span className="services-eyebrow">What We Do</span>
+          <h2 className="services-big-title">Services</h2>
+        </div>
 
         {/* Expanding black panel */}
         <div ref={panelRef} className="service-black-panel">

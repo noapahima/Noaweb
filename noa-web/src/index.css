@@ -637,17 +637,29 @@ a { color: inherit; text-decoration: none; }
   gap: 0.4rem;
 }
 
+.service-expand-title {
+  position: absolute;
+  bottom: 4rem;
+  right: 5rem;
+  text-align: right;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: 0.4rem;
+  z-index: 1;
+  pointer-events: none;
+}
+
 .service-black-panel {
   position: absolute;
   top: 0;
   left: 0;
-  width: 20px;
-  height: 20px;
+  width: 65vw;
+  height: 100vh;
   background: #0d0d0d;
-  border-radius: 50%;
   overflow: hidden;
   z-index: 2;
-  transform-origin: top left;
+  clip-path: circle(0px at 0px 0px);
 }
 
 .service-content-inner {
