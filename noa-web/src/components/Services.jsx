@@ -70,8 +70,6 @@ export default function Services() {
           <p className="about-text" ref={aboutTxtRef} />
         </div>
 
-        <div className="services-panel services-panel-white" />
-
         <div className="services-panel services-panel-title">
           <span className="services-eyebrow">What We Do</span>
           <h2 className="services-big-title">Services</h2>
