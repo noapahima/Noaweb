@@ -50,7 +50,7 @@ export default function Services() {
     const track = trackRef.current;
     if (!wrap || !track) return;
 
-    const getScrollAmt = () => track.scrollWidth - window.innerWidth;
+    const getScrollAmt = () => Math.max(1, track.scrollWidth - window.innerWidth);
     const hCtx = gsap.context(() => {
       gsap.to(track, {
         x: () => -getScrollAmt(),
@@ -211,17 +211,10 @@ export default function Services() {
             <p className="about-text" ref={aboutTxtRef} />
           </div>
 
-          <div className="services-panel services-panel-title">
-            <span className="services-title-dot" />
-            <span className="services-eyebrow">What We Do</span>
-            <h2 className="services-big-title">Services</h2>
-            <span className="services-hint">↓ scroll</span>
-          </div>
-
         </div>
       </div>
 
-      {/* ── Service expand section ── */}
+      {/* ── Service expand section (6 balls) ── */}
       <div ref={expandRef} className="service-expand-section">
 
         {/* Static title — bottom right, never moves */}
@@ -252,6 +245,7 @@ export default function Services() {
         <div ref={dot2Ref} className="service-dot" />
 
       </div>
+
     </>
   );
 }

@@ -62,7 +62,7 @@ export default function Hero() {
       transform-origin: center center;
     `;
 
-    const serviceTitlePanel = document.querySelector('.services-panel-title');
+    const serviceTitlePanel = document.querySelector('.service-expand-section');
     if (serviceTitlePanel) {
       serviceTitlePanel.style.position = 'relative';
       serviceTitlePanel.appendChild(landingDot);
