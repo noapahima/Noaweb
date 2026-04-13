@@ -71,6 +71,7 @@ export default function Services() {
         </div>
 
         <div className="services-panel services-panel-title">
+          <span className="services-title-dot" />
           <span className="services-eyebrow">What We Do</span>
           <h2 className="services-big-title">Services</h2>
           <span className="services-hint">→ scroll</span>
