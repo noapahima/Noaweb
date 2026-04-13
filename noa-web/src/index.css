@@ -687,16 +687,17 @@ a { color: inherit; text-decoration: none; }
   font-weight: 300;
 }
 
-.service-next-dot {
+.service-dot {
   position: absolute;
+  top: 0;
+  left: 0;
   width: 20px;
   height: 20px;
   border-radius: 50%;
   background: #000;
-  top: 0;
-  left: 0;
   z-index: 3;
   pointer-events: none;
+  will-change: transform;
 }
 
 /* Service item panel */

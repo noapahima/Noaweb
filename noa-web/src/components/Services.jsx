@@ -15,21 +15,21 @@ const services = [
   { num: '06', name: 'Cloud & Infrastructure',desc: 'Scalable cloud architecture on AWS/GCP, DevOps pipelines, and security-first deployments.' },
 ];
 
-// Starting X position (as fraction of vw) for each service ball
-// alternates: center → right → left → right → left → right
-const BALL_FX = [0.5, 0.82, 0.18, 0.82, 0.18, 0.82];
-
 export default function Services() {
-  const wrapRef      = useRef(null);
-  const trackRef     = useRef(null);
-  const aboutTxtRef  = useRef(null);
-  const expandRef    = useRef(null);
-  const blackPanelRef= useRef(null);
-  const contentRefs  = useRef([]);
-  const nextDotRef   = useRef(null);
+  const wrapRef     = useRef(null);
+  const trackRef    = useRef(null);
+  const aboutTxtRef = useRef(null);
+
+  // expand section
+  const expandRef   = useRef(null);
+  const panelRef    = useRef(null);
+  const dot0Ref     = useRef(null);
+  const dot1Ref     = useRef(null);
+  const dot2Ref     = useRef(null);
+  const contentRefs = useRef([]);
 
   useEffect(() => {
-    // ── About text word animation ─────────────────────────────────────────
+    // ── About text animation ──────────────────────────────────────────────
     const el = aboutTxtRef.current;
     if (el) {
       el.innerHTML = aboutText
@@ -68,123 +68,37 @@ export default function Services() {
     }, wrap);
 
     // ── Service expand section ────────────────────────────────────────────
-    const expand    = expandRef.current;
-    const blackPanel= blackPanelRef.current;
-    const nextDot   = nextDotRef.current;
-    if (!expand || !blackPanel || !nextDot) return;
+    const expand = expandRef.current;
+    const panel  = panelRef.current;
+    if (!expand || !panel) return;
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // Scroll budget per service
-    const BUDGET = vw * 1.8;
-    const TOTAL  = BUDGET * services.length;
+    // Inline power2.inOut easing
+    const eIO  = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
+    const lerp = (a, b, t) => a + (b - a) * t;
 
-    // Phase fractions within each service budget
-    const PH_EXPAND   = 0.22; // 0 → expand fully
-    const PH_SHOW     = 0.78; // expand → start collapse
-    const PH_COLLAPSE = 0.93; // show → fully collapsed
-
-    // Ball starting positions (top-left of 20×20 dot)
-    const ballPos = BALL_FX.map(fx => ({
-      x: fx * vw - 10,
-      y: vh / 2 - 10,
-    }));
-
-    // Panel dimensions when fully expanded (covers left 65%)
+    const OPEN_X  = vw * 0.22 - 10;   // x where left ball opens
+    const WAIT_X  = vw * 0.70 - 10;   // x where right ball waits
+    const BY      = vh / 2 - 10;       // ball Y (matches hero landing)
     const PANEL_W = vw * 0.65;
     const PANEL_H = vh;
+    const BUDGET  = vw * 2.2;          // scroll budget per service
+    const TOTAL   = BUDGET * services.length;
 
-    const updateStage = (self) => {
-      const rawIdx   = self.progress * services.length;
-      const idx      = Math.min(services.length - 1, Math.floor(rawIdx));
-      const sp       = rawIdx - idx; // 0→1 within this service
+    // 3 dot elements rotated through roles (opening / waiting / entering)
+    const dots = [dot0Ref.current, dot1Ref.current, dot2Ref.current];
+    const opening  = i => dots[i % 3];
+    const waiting  = i => dots[(i + 1) % 3];
+    const entering = i => dots[(i + 2) % 3];
 
-      const pos     = ballPos[idx];
-      const nextPos = idx < services.length - 1 ? ballPos[idx + 1] : null;
-
-      // power2.inOut easing inline
-      const easeInOut = (t) => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
-
-      // ── Expand phase ──────────────────────────────────────────────────
-      if (sp < PH_EXPAND) {
-        const t  = sp / PH_EXPAND;
-        const et = easeInOut(t);
-
-        gsap.set(blackPanel, {
-          x:            pos.x * (1 - et),
-          y:            pos.y * (1 - et),
-          width:        20 + (PANEL_W - 20) * et,
-          height:       20 + (PANEL_H - 20) * et,
-          borderRadius: `${50 * (1 - et)}%`,
-          opacity:      1,
-        });
-
-        // Fade in content near end of expand
-        const contentT = Math.max(0, (et - 0.75) / 0.25);
-        contentRefs.current.forEach((c, i) => {
-          if (!c) return;
-          c.style.opacity = i === idx ? contentT : 0;
-        });
-        gsap.set(nextDot, { opacity: 0 });
-        return;
-      }
-
-      // ── Show phase (static — nothing moves) ───────────────────────────
-      if (sp < PH_SHOW) {
-        gsap.set(blackPanel, {
-          x: 0, y: 0,
-          width: PANEL_W, height: PANEL_H,
-          borderRadius: 0, opacity: 1,
-        });
-        contentRefs.current.forEach((c, i) => {
-          if (!c) return;
-          c.style.opacity = i === idx ? 1 : 0;
-        });
-
-        // Show next dot on the right while service is open
-        if (nextPos) {
-          gsap.set(nextDot, { x: nextPos.x, y: nextPos.y, opacity: 1 });
-        } else {
-          gsap.set(nextDot, { opacity: 0 });
-        }
-        return;
-      }
-
-      // ── Collapse phase ────────────────────────────────────────────────
-      if (sp < PH_COLLAPSE) {
-        const t   = (sp - PH_SHOW) / (PH_COLLAPSE - PH_SHOW);
-        const ct  = gsap.parseEase('power2.inOut')(t);
-        const end = nextPos || pos; // collapse toward next ball or stay
-
-        gsap.set(blackPanel, {
-          x:            0 + end.x * ct,
-          y:            0 + end.y * ct,
-          width:        PANEL_W - (PANEL_W - 20) * ct,
-          height:       PANEL_H - (PANEL_H - 20) * ct,
-          borderRadius: `${50 * ct}%`,
-          opacity:      1,
-        });
-
-        const fadeT = Math.max(0, 1 - ct / 0.3);
-        contentRefs.current.forEach((c, i) => {
-          if (!c) return;
-          c.style.opacity = i === idx ? fadeT : 0;
-        });
-        gsap.set(nextDot, { opacity: 0 });
-        return;
-      }
-
-      // ── Transition: ball sitting at next position ─────────────────────
-      const end = nextPos || pos;
-      gsap.set(blackPanel, {
-        x: end.x, y: end.y,
-        width: 20, height: 20,
-        borderRadius: '50%', opacity: 1,
-      });
-      contentRefs.current.forEach(c => { if (c) c.style.opacity = 0; });
-      gsap.set(nextDot, { opacity: 0 });
-    };
+    // Initial positions — dots[0] matches hero landing dot
+    gsap.set(dots[0], { x: vw / 2 - 10, y: BY, opacity: 1 });
+    gsap.set(dots[1], { x: vw * 0.85,   y: BY, opacity: 0 });
+    gsap.set(dots[2], { x: vw + 20,     y: BY, opacity: 0 });
+    gsap.set(panel, { x: vw / 2 - 10, y: BY, width: 20, height: 20, borderRadius: '50%', opacity: 0 });
+    contentRefs.current.forEach(c => c && (c.style.opacity = '0'));
 
     ScrollTrigger.create({
       trigger: expand,
@@ -192,12 +106,105 @@ export default function Services() {
       end:     `+=${TOTAL}`,
       pin:     true,
       scrub:   1.2,
-      onUpdate: updateStage,
-    });
+      onUpdate(self) {
+        const raw = self.progress * services.length;
+        const idx = Math.min(services.length - 1, Math.floor(raw));
+        const sp  = raw - idx; // 0→1 within current service
 
-    // Init: ball at center (matching hero landing dot)
-    gsap.set(blackPanel, { x: ballPos[0].x, y: ballPos[0].y, width: 20, height: 20, borderRadius: '50%', opacity: 1 });
-    gsap.set(nextDot, { opacity: 0 });
+        const op = opening(idx);
+        const wa = waiting(idx);
+        const en = entering(idx);
+
+        const isFirst = idx === 0;
+
+        // Phase breakpoints
+        const PH_SLIDE = isFirst ? 0.18 : 0;
+        const PH_EXP   = PH_SLIDE + 0.28;
+        const PH_SHOW  = PH_EXP   + 0.22;
+        const PH_CLOSE = PH_SHOW  + 0.22;
+        // EXIT: PH_CLOSE → 1.0
+
+        // Reset content
+        contentRefs.current.forEach((c, i) => c && (c.style.opacity = i === idx ? '' : '0'));
+
+        // ── SLIDE (service 0 only) ──────────────────────────────────────
+        if (isFirst && sp < PH_SLIDE) {
+          const t = eIO(sp / PH_SLIDE);
+          gsap.set(op, { x: lerp(vw / 2 - 10, OPEN_X, t), y: BY, opacity: 1 });
+          gsap.set(wa, { x: lerp(vw * 0.85, WAIT_X, t), y: BY, opacity: t });
+          gsap.set(en, { opacity: 0 });
+          gsap.set(panel, { opacity: 0 });
+          if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '0';
+          return;
+        }
+
+        // ── EXPAND ──────────────────────────────────────────────────────
+        if (sp < PH_EXP) {
+          const t = eIO((sp - PH_SLIDE) / 0.28);
+          // Teleport entering dot off screen right while hidden
+          gsap.set(en, { x: vw + 20, y: BY, opacity: 0 });
+          gsap.set(op, { opacity: 0 });
+          gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
+          gsap.set(panel, {
+            x: lerp(OPEN_X, 0, t),
+            y: lerp(BY, 0, t),
+            width:        lerp(20, PANEL_W, t),
+            height:       lerp(20, PANEL_H, t),
+            borderRadius: lerp(50, 0, t) + '%',
+            opacity:      1,
+          });
+          const ct = Math.max(0, (t - 0.72) / 0.28);
+          if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = ct;
+          return;
+        }
+
+        // ── SHOW ────────────────────────────────────────────────────────
+        if (sp < PH_SHOW) {
+          gsap.set(en, { opacity: 0 });
+          gsap.set(op, { opacity: 0 });
+          gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
+          gsap.set(panel, { x: 0, y: 0, width: PANEL_W, height: PANEL_H, borderRadius: '0%', opacity: 1 });
+          if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '1';
+          return;
+        }
+
+        // ── CLOSE ───────────────────────────────────────────────────────
+        if (sp < PH_CLOSE) {
+          const t = eIO((sp - PH_SHOW) / 0.22);
+          gsap.set(en, { opacity: 0 });
+          gsap.set(op, { opacity: 0 });
+          gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
+          gsap.set(panel, {
+            x: lerp(0, OPEN_X, t),
+            y: lerp(0, BY, t),
+            width:        lerp(PANEL_W, 20, t),
+            height:       lerp(PANEL_H, 20, t),
+            borderRadius: lerp(0, 50, t) + '%',
+            opacity:      1,
+          });
+          const ct = Math.max(0, 1 - t / 0.3);
+          if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = ct;
+          return;
+        }
+
+        // ── EXIT / SLIDE ─────────────────────────────────────────────────
+        const t = eIO((sp - PH_CLOSE) / (1 - PH_CLOSE));
+        const hasNext = idx < services.length - 1;
+
+        gsap.set(panel, { opacity: 0 });
+        // opening dot exits left
+        gsap.set(op, { x: lerp(OPEN_X, -40, t), y: BY, opacity: 1 });
+        // waiting dot slides to left (becomes next opener)
+        gsap.set(wa, { x: lerp(WAIT_X, OPEN_X, t), y: BY, opacity: 1 });
+        // entering dot comes in from right (becomes next waiter)
+        if (hasNext) {
+          gsap.set(en, { x: lerp(vw + 20, WAIT_X, t), y: BY, opacity: t });
+        } else {
+          gsap.set(en, { opacity: 0 });
+        }
+        if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '0';
+      },
+    });
 
     return () => hCtx.revert();
   }, []);
@@ -226,14 +233,8 @@ export default function Services() {
       {/* ── Service expand section ── */}
       <div ref={expandRef} className="service-expand-section">
 
-        {/* Background: white, same look as services title panel */}
-        <div className="service-expand-bg">
-          <span className="services-eyebrow">What We Do</span>
-          <h2 className="services-big-title">Services</h2>
-        </div>
-
         {/* Expanding black panel */}
-        <div ref={blackPanelRef} className="service-black-panel">
+        <div ref={panelRef} className="service-black-panel">
           {services.map((s, i) => (
             <div
               key={s.num}
@@ -248,8 +249,10 @@ export default function Services() {
           ))}
         </div>
 
-        {/* Next dot indicator (right side) */}
-        <div ref={nextDotRef} className="service-next-dot" />
+        {/* Three rotating dots */}
+        <div ref={dot0Ref} className="service-dot" />
+        <div ref={dot1Ref} className="service-dot" />
+        <div ref={dot2Ref} className="service-dot" />
 
       </div>
     </>
