@@ -31,7 +31,6 @@ export default function Hero() {
     const finalX = vw / 2 - 10;
     const finalY = vh / 2 - 10;
 
-    // textY = Y of about-text first line when services is pinned
     const aboutTextEl = document.querySelector('.about-text');
     const rawTop = aboutTextEl
       ? aboutTextEl.getBoundingClientRect().top
@@ -47,8 +46,7 @@ export default function Hero() {
 
     let hasLanded = false;
 
-    // The static dot that will live inside the services title panel
-    // Created once when ball lands, stays there forever
+    // ── Landing dot (absolute inside services title panel) ────────────────
     const landingDot = document.createElement('div');
     landingDot.style.cssText = `
       position: absolute;
@@ -80,8 +78,6 @@ export default function Hero() {
       }
 
       if (s < heroEnd) {
-        // Ball moves toward textY — white panel rises to meet it
-        // visually looks like falling onto the incoming panel
         const p    = s / heroEnd;
         const newY = startY + (textY - startY) * p;
         const bg   = newY >= (vh - s) ? '#000' : '#fff';
@@ -89,15 +85,16 @@ export default function Hero() {
         return;
       }
 
-      // Ball landed — switch to static dot inside the panel
+      // ── Ball landed ───────────────────────────────────────────────────
       if (ds >= B1 + B2) {
         if (!hasLanded) {
           hasLanded = true;
           if (serviceTitlePanel) {
             const panelRect = serviceTitlePanel.getBoundingClientRect();
-            const relX = finalX - panelRect.left;
-            const relY = finalY - panelRect.top;
-            gsap.set(landingDot, { x: relX, y: relY });
+            gsap.set(landingDot, {
+              x: finalX - panelRect.left,
+              y: finalY - panelRect.top,
+            });
           }
           gsap.set(dot, { opacity: 0 });
           gsap.fromTo(landingDot,
@@ -108,15 +105,14 @@ export default function Hero() {
         return;
       }
 
-      // Scrolled back up past landing — restore fixed dot
+      // ── Scrolled back up past landing ─────────────────────────────────
       if (hasLanded) {
         hasLanded = false;
         gsap.set(landingDot, { opacity: 0 });
         gsap.set(dot, { x: finalX, y: finalY, background: '#000', opacity: 1 });
       }
 
-
-      // Hop 1 — bounces on text line
+      // Hop 1
       if (ds <= B1) {
         const t = ds / B1;
         gsap.set(dot, {
@@ -127,7 +123,7 @@ export default function Hero() {
         return;
       }
 
-      // Hop 2 → center of page 3
+      // Hop 2 → center of services title panel
       const t = (ds - B1) / B2;
       gsap.set(dot, {
         x: hop1EndX + (finalX - hop1EndX) * t,
