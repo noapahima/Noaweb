@@ -51,7 +51,10 @@ export default function Loader({ onComplete }) {
             opacity: 0,
             duration: 0.3,
             ease: 'none',
-            onComplete,
+            onComplete() {
+              overlay.style.display = 'none';
+              onComplete();
+            },
           });
       },
     });

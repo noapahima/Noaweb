@@ -570,8 +570,12 @@ a { color: inherit; text-decoration: none; }
 
 /* Title panel */
 .services-panel-title {
-  justify-content: center;
-  gap: 1rem;
+  background: #fff;
+  justify-content: flex-end;
+  align-items: flex-end;
+  text-align: right;
+  gap: 0.6rem;
+  padding: 4rem 5rem;
 }
 
 .services-eyebrow {
@@ -579,8 +583,8 @@ a { color: inherit; text-decoration: none; }
   font-size: 0.7rem;
   letter-spacing: 0.3em;
   text-transform: uppercase;
-  color: #fff;
-  opacity: 0.4;
+  color: #000;
+  opacity: 0.35;
 }
 
 .services-big-title {
@@ -590,7 +594,7 @@ a { color: inherit; text-decoration: none; }
   line-height: 0.85;
   letter-spacing: -0.02em;
   text-transform: uppercase;
-  color: #fff;
+  color: #000;
   margin: 0;
 }
 
@@ -598,9 +602,9 @@ a { color: inherit; text-decoration: none; }
   font-family: 'Inter', sans-serif;
   font-size: 0.75rem;
   letter-spacing: 0.15em;
-  color: #fff;
-  opacity: 0.3;
-  margin-top: 1rem;
+  color: #000;
+  opacity: 0.25;
+  margin-top: 0.5rem;
 }
 
 /* Service item panel */
