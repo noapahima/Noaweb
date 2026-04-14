@@ -175,10 +175,10 @@ export default function Services() {
           // ── CLOSE ────────────────────────────────────────────────────
           if (sp < S_EXPAND + S_SHOW + S_CLOSE) {
             const t = eIO((sp - S_EXPAND - S_SHOW) / S_CLOSE);
-            gsap.set(ld, { x: LEFT_X,  y: BY, opacity: 0 });
+            gsap.set(ld, { x: LEFT_X,  y: BY, opacity: 1 });
             gsap.set(rd, { x: RIGHT_X, y: BY, opacity: 1 });
             gsap.set(nd, { opacity: 0 });
-            gsap.set(panel, { clipPath: clip(lerp(maxR, 0, t)) });
+            gsap.set(panel, { clipPath: clip(lerp(maxR, 10, t)) });
             if (contentRefs.current[idx])
               contentRefs.current[idx].style.opacity = String(Math.max(0, 1 - t / 0.4));
             return;
