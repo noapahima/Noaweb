@@ -83,18 +83,11 @@ export default function Services() {
     const S_SHOW     = vw * 1.2;
     const S_CLOSE    = vw * 0.8;
     const S_EXIT     = vw * 0.7;
-    const S_FALL     = vw * 1.1;   // last dot: fall → bounce → left → contact
-
-    // TEXT_Y — top of "Services" title, computed once on resize-safe tick
-    const getTextY = () => {
-      const el = document.querySelector('.services-big-title');
-      if (el) return el.getBoundingClientRect().top + 6;
-      return vh - 64 - Math.min(vw * 0.18, 288) * 0.85;
-    };
+    const S_FALL     = vw * 0.9;   // last dot: fall → 2 bounces left → fall to contact
     const SVC_BUDGET = S_EXPAND + S_SHOW + S_CLOSE + S_EXIT; // same for all 6
     const TOTAL = SCROLL_AMT + S0_SLIDE
       + services.length * (S_EXPAND + S_SHOW + S_CLOSE)
-      + services.length * S_EXIT   // all 6 services exit, last one exits before fall
+      + services.length * S_EXIT
       + S_FALL;
 
     // Initial state — all dots hidden, panel closed
@@ -213,45 +206,49 @@ export default function Services() {
               gsap.set(nd, { opacity: 0 });
             }
           } else if (isLast) {
-            const TEXT_Y = getTextY();
-            const t      = Math.min(1, (afterClose - S_EXIT) / S_FALL);
-            const DEST   = vh + 40;
-            const STEP   = RIGHT_X - LEFT_X;
-
-            const X0 = RIGHT_X;
-            const X1 = RIGHT_X - STEP * 0.5;
-            const X2 = RIGHT_X - STEP * 0.95;
-
-            const P_HIT = 0.16;
-            const P_B1  = 0.38;
-
             gsap.set(ld, { opacity: 0 });
             gsap.set(nd, { opacity: 0 });
+
+            const t = Math.min(1, (afterClose - S_EXIT) / S_FALL);
+
+            // TEXT_Y: top of "Services" title
+            const titleEl = document.querySelector('.services-big-title');
+            const TEXT_Y  = titleEl ? titleEl.getBoundingClientRect().top - 10 : vh * 0.85;
+
+            // X positions for the two bounces (moving left)
+            const STEP = RIGHT_X - LEFT_X;
+            const X0   = RIGHT_X;
+            const X1   = RIGHT_X - STEP * 0.5;   // after bounce 1
+            const X2   = RIGHT_X - STEP * 0.85;  // after bounce 2
+            const DEST = vh + 60;                 // off-screen below
+
+            const P_HIT = 0.14;  // fall lands on TEXT_Y
+            const P_B1  = 0.38;  // bounce 1 complete
 
             let x, y;
 
             if (t < P_HIT) {
-              // Fall straight down — gravity (t²)
+              // Straight fall with gravity
               const f = (t / P_HIT) ** 2;
               x = X0;
               y = lerp(BY, TEXT_Y, f);
 
             } else if (t < P_B1) {
-              // Bounce 1 — parabola X0→X1
+              // Bounce 1 — symmetric parabola X0→X1
               const f = (t - P_HIT) / (P_B1 - P_HIT);
               x = lerp(X0, X1, f);
-              y = TEXT_Y - 70 * 4 * f * (1 - f);
+              y = TEXT_Y - 100 * 4 * f * (1 - f);
 
             } else {
-              // Bounce 2 — single unbroken parabola from TEXT_Y, arcs up,
-              // then falls continuously past TEXT_Y all the way to DEST.
-              // Solve f_end: TEXT_Y - H*4f(1-f) = DEST
-              //   => f_end = 0.5 + sqrt(0.25 + (DEST-TEXT_Y)/(4H))
-              const H     = 50;
+              // Bounce 2 — single continuous parabola that rises from TEXT_Y,
+              // arcs over, and naturally falls past TEXT_Y to DEST.
+              // One formula = zero velocity discontinuity = no wall.
+              const H     = 120;
               const f_end = 0.5 + Math.sqrt(0.25 + (DEST - TEXT_Y) / (4 * H));
               const f     = (t - P_B1) / (1 - P_B1) * f_end;
-              // x: travel X1→X2 over f: 0→1, then stay at X2
-              x = f <= 1 ? lerp(X1, X2, f) : X2;
+              // x eases out smoothly to X2 — no hard stop
+              const xP   = Math.min(1, f / f_end);
+              x = lerp(X1, X2, 1 - (1 - xP) * (1 - xP));
               y = TEXT_Y - H * 4 * f * (1 - f);
             }
 
