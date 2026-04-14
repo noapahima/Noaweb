@@ -61,7 +61,7 @@ export default function Services() {
     const BY      = vh / 2 - 10;
 
     // Panel clip-path from LEFT_X
-    const PANEL_W = vw * 0.75;
+    const PANEL_W = vw * 0.80;
     const PANEL_H = vh;
     const OX  = LEFT_X + 10;
     const OY  = BY + 10;
@@ -127,9 +127,9 @@ export default function Services() {
 
           // ── Phase 2: initial slide (service 0 setup) ─────────────────
           if (afterScroll < S0_SLIDE) {
-            const t = eIO(afterScroll / S0_SLIDE);
+            const t = afterScroll / S0_SLIDE;
             gsap.set(dots[0], { x: lerp(START_X, LEFT_X, t),  y: BY, opacity: 1 });
-            gsap.set(dots[1], { x: lerp(vw + 60, RIGHT_X, t), y: BY, opacity: t });
+            gsap.set(dots[1], { x: lerp(RIGHT_X + (RIGHT_X - LEFT_X), RIGHT_X, t), y: BY, opacity: 1 });
             gsap.set(dots[2], { opacity: 0 });
             gsap.set(panel, { clipPath: clip(0) });
             contentRefs.current.forEach(c => c && (c.style.opacity = '0'));
@@ -190,28 +190,28 @@ export default function Services() {
 
           if (idx < services.length - 1) {
             // Normal exit: slide left, bring in new dot
-            const t = eIO((sp - S_EXPAND - S_SHOW - S_CLOSE) / S_EXIT);
-            gsap.set(ld, { x: lerp(LEFT_X,   -50,    t), y: BY, opacity: lerp(1, 0, t) });
-            gsap.set(rd, { x: lerp(RIGHT_X, LEFT_X,  t), y: BY, opacity: 1 });
-            gsap.set(nd, { x: lerp(vw + 60, RIGHT_X, t), y: BY, opacity: t });
+            const DIST = RIGHT_X - LEFT_X;
+            const t = Math.min(1, (sp - S_EXPAND - S_SHOW - S_CLOSE) / S_EXIT);
+            // All three travel the same distance DIST = same speed
+            gsap.set(ld, { x: lerp(LEFT_X,          LEFT_X  - DIST, t), y: BY, opacity: 1 });
+            gsap.set(rd, { x: lerp(RIGHT_X,          LEFT_X,         t), y: BY, opacity: 1 });
+            gsap.set(nd, { x: lerp(RIGHT_X + DIST,   RIGHT_X,        t), y: BY, opacity: 1 });
           } else {
-            // Last service: right dot slides all the way to LEFT_X, then falls
+            // Last service: slide to LEFT_X then fall — single easing over whole path
             const raw = (sp - S_EXPAND - S_SHOW - S_CLOSE) / S_FALL;
-            const t   = Math.min(1, raw);
-            const SLIDE_END = 0.55;  // first 55% = slide to LEFT_X
+            const t   = Math.min(1, raw); // linear — same speed throughout
+            const SLIDE_END = 0.55;
             gsap.set(ld, { opacity: 0 });
             gsap.set(nd, { opacity: 0 });
-            if (t <= SLIDE_END) {
-              const ts = eIO(t / SLIDE_END);
-              gsap.set(rd, { x: lerp(RIGHT_X, LEFT_X, ts), y: BY, opacity: 1 });
-            } else {
-              const tf = eIO((t - SLIDE_END) / (1 - SLIDE_END));
-              gsap.set(rd, {
-                x: LEFT_X,
-                y: lerp(BY, vh + 40, tf),
-                opacity: tf > 0.75 ? lerp(1, 0, (tf - 0.75) / 0.25) : 1,
-              });
-            }
+            gsap.set(rd, {
+              x: t <= SLIDE_END
+                ? lerp(RIGHT_X, LEFT_X, t / SLIDE_END)
+                : LEFT_X,
+              y: t <= SLIDE_END
+                ? BY
+                : lerp(BY, vh + 40, (t - SLIDE_END) / (1 - SLIDE_END)),
+              opacity: t > 0.85 ? lerp(1, 0, (t - 0.85) / 0.15) : 1,
+            });
           }
         },
       });
