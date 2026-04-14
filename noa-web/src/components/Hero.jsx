@@ -48,6 +48,7 @@ export default function Hero() {
 
     // ── Landing dot (absolute inside services title panel) ────────────────
     const landingDot = document.createElement('div');
+    landingDot.id = 'hero-landing-dot';
     landingDot.style.cssText = `
       position: absolute;
       width: 20px;
@@ -62,7 +63,7 @@ export default function Hero() {
       transform-origin: center center;
     `;
 
-    const serviceTitlePanel = document.querySelector('.service-expand-section');
+    const serviceTitlePanel = document.querySelector('.services-panel-title');
     if (serviceTitlePanel) {
       serviceTitlePanel.style.position = 'relative';
       serviceTitlePanel.appendChild(landingDot);

@@ -534,8 +534,10 @@ a { color: inherit; text-decoration: none; }
 /* Services — horizontal scroll */
 .services-wrap {
   width: 100%;
+  height: 100vh;
   overflow: hidden;
   background: #fff;
+  position: relative;
 }
 
 .services-track {
@@ -624,42 +626,18 @@ a { color: inherit; text-decoration: none; }
   width: 100%;
   height: 100vh;
   overflow: hidden;
-  background: #fff;
-}
-
-.service-expand-bg {
-  position: absolute;
-  bottom: 4rem;
-  right: 5rem;
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  gap: 0.4rem;
-}
-
-.service-expand-title {
-  position: absolute;
-  bottom: 4rem;
-  right: 5rem;
-  text-align: right;
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  gap: 0.4rem;
-  z-index: 1;
-  pointer-events: none;
+  background: #111;
 }
 
 .service-black-panel {
   position: absolute;
   top: 0;
   left: 0;
-  width: 65vw;
+  width: 75vw;
   height: 100vh;
   background: #0d0d0d;
-  overflow: hidden;
   z-index: 2;
-  clip-path: circle(0px at 0px 0px);
+  pointer-events: none;
 }
 
 .service-content-inner {

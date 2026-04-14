@@ -7,29 +7,26 @@ gsap.registerPlugin(ScrollTrigger);
 const aboutText = "We are Noa Software Solutions — a boutique studio crafting custom technology that gives businesses an unfair advantage. From AI-powered workflows to pixel-perfect interfaces, we turn ambitious ideas into real products that scale.";
 
 const services = [
-  { num: '01', name: 'Custom CRM',            desc: 'Bespoke lead management, automated pipelines, and advanced analytics tailored to your exact business needs.' },
-  { num: '02', name: 'Business Automations',  desc: 'End-to-end workflow optimization using Zapier, Make, and custom API integrations to eliminate manual tasks.' },
-  { num: '03', name: 'Web Development',       desc: 'High-performance, responsive websites built with React and Next.js — focusing on speed and stunning UI/UX.' },
-  { num: '04', name: 'Mobile Applications',   desc: 'Premium cross-platform apps for iOS and Android using React Native and Flutter.' },
-  { num: '05', name: 'AI Integration',        desc: 'Smart agents, LLM-based workflows, and custom chatbots that boost your team\'s productivity.' },
-  { num: '06', name: 'Cloud & Infrastructure',desc: 'Scalable cloud architecture on AWS/GCP, DevOps pipelines, and security-first deployments.' },
+  { num: '01', name: 'Custom CRM',             desc: 'Bespoke lead management, automated pipelines, and advanced analytics tailored to your exact business needs.' },
+  { num: '02', name: 'Business Automations',   desc: 'End-to-end workflow optimization using Zapier, Make, and custom API integrations to eliminate manual tasks.' },
+  { num: '03', name: 'Web Development',        desc: 'High-performance, responsive websites built with React and Next.js — focusing on speed and stunning UI/UX.' },
+  { num: '04', name: 'Mobile Applications',    desc: 'Premium cross-platform apps for iOS and Android using React Native and Flutter.' },
+  { num: '05', name: 'AI Integration',         desc: "Smart agents, LLM-based workflows, and custom chatbots that boost your team's productivity." },
+  { num: '06', name: 'Cloud & Infrastructure', desc: 'Scalable cloud architecture on AWS/GCP, DevOps pipelines, and security-first deployments.' },
 ];
 
 export default function Services() {
   const wrapRef     = useRef(null);
   const trackRef    = useRef(null);
   const aboutTxtRef = useRef(null);
-
-  // expand section
-  const expandRef   = useRef(null);
   const panelRef    = useRef(null);
+  const contentRefs = useRef([]);
   const dot0Ref     = useRef(null);
   const dot1Ref     = useRef(null);
   const dot2Ref     = useRef(null);
-  const contentRefs = useRef([]);
 
   useEffect(() => {
-    // ── About text animation ──────────────────────────────────────────────
+    // ── About text animation ──────────────────────────────────────────
     const el = aboutTxtRef.current;
     if (el) {
       el.innerHTML = aboutText
@@ -45,207 +42,205 @@ export default function Services() {
       });
     }
 
-    // ── Horizontal scroll: About + Services title (2 panels = 1×vw) ──────
     const wrap  = wrapRef.current;
     const track = trackRef.current;
-    if (!wrap || !track) return;
-
-    const getScrollAmt = () => Math.max(1, track.scrollWidth - window.innerWidth);
-    const hCtx = gsap.context(() => {
-      gsap.to(track, {
-        x: () => -getScrollAmt(),
-        ease: 'none',
-        scrollTrigger: {
-          trigger: wrap,
-          start: 'top top',
-          end: () => `+=${getScrollAmt()}`,
-          scrub: 1,
-          pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
-        },
-      });
-    }, wrap);
-
-    // ── Service expand section ────────────────────────────────────────────
-    const expand = expandRef.current;
-    const panel  = panelRef.current;
-    if (!expand || !panel) return;
+    const panel = panelRef.current;
+    const dots  = [dot0Ref.current, dot1Ref.current, dot2Ref.current];
+    if (!wrap || !track || !panel || dots.some(d => !d)) return;
 
     const vw = window.innerWidth;
     const vh = window.innerHeight;
 
-    // Inline power2.inOut easing
     const eIO  = t => t < 0.5 ? 2 * t * t : -1 + (4 - 2 * t) * t;
     const lerp = (a, b, t) => a + (b - a) * t;
 
-    const OPEN_X  = vw * 0.22 - 10;   // x where left ball opens
-    const WAIT_X  = vw * 0.70 - 10;   // x where right ball waits
-    const BY      = vh / 2 - 10;       // ball Y (matches hero landing)
-    const PANEL_W = vw * 0.65;
+    // Positions
+    const START_X = vw / 2 - 10;     // hero ball center
+    const LEFT_X  = vw * 0.20 - 10;
+    const RIGHT_X = vw * 0.72 - 10;
+    const BY      = vh / 2 - 10;
+
+    // Panel clip-path from LEFT_X
+    const PANEL_W = vw * 0.75;
     const PANEL_H = vh;
-    const BUDGET  = vw * 3.5;          // scroll budget per service
-    const TOTAL   = BUDGET * services.length;
+    const OX  = LEFT_X + 10;
+    const OY  = BY + 10;
+    const maxR = Math.sqrt(
+      Math.pow(Math.max(OX, PANEL_W - OX), 2) +
+      Math.pow(Math.max(OY, PANEL_H - OY), 2)
+    ) + 20;
+    const clip = r => `circle(${r}px at ${OX}px ${OY}px)`;
 
-    // 3 dot elements rotated through roles (opening / waiting / entering)
-    const dots = [dot0Ref.current, dot1Ref.current, dot2Ref.current];
-    const opening  = i => dots[i % 3];
-    const waiting  = i => dots[(i + 1) % 3];
-    const entering = i => dots[(i + 2) % 3];
+    // Dot role helpers (rotate through 3 dots)
+    const leftDot  = i => dots[i % 3];
+    const rightDot = i => dots[(i + 1) % 3];
+    const newDot   = i => dots[(i + 2) % 3];
 
-    // Initial positions — dots[0] matches hero landing dot
-    gsap.set(dots[0], { x: vw / 2 - 10, y: BY, opacity: 1 });
-    gsap.set(dots[1], { x: vw * 0.85,   y: BY, opacity: 0 });
-    gsap.set(dots[2], { x: vw + 20,     y: BY, opacity: 0 });
-    // Panel is always full size, positioned at 0,0 — clip-path controls visibility
-    gsap.set(panel, { x: 0, y: 0, width: PANEL_W, height: PANEL_H, borderRadius: 0, clipPath: `circle(0px at ${OPEN_X + 10}px ${BY + 10}px)`, opacity: 1 });
+    // Scroll budgets
+    const SCROLL_AMT = track.scrollWidth - vw;
+    const S0_SLIDE   = vw * 0.7;   // initial slide (service 0 only)
+    const S_EXPAND   = vw * 0.8;
+    const S_SHOW     = vw * 1.2;
+    const S_CLOSE    = vw * 0.8;
+    const S_EXIT     = vw * 0.7;   // transition between services
+    const SVC_BUDGET = S_EXPAND + S_SHOW + S_CLOSE + S_EXIT; // per service (with exit)
+    const TOTAL = SCROLL_AMT + S0_SLIDE
+      + services.length * (S_EXPAND + S_SHOW + S_CLOSE)
+      + (services.length - 1) * S_EXIT;
+
+    // Initial state — all dots hidden, panel closed
+    gsap.set(dots[0], { x: START_X,      y: BY, opacity: 0 });
+    gsap.set(dots[1], { x: vw + 60,      y: BY, opacity: 0 });
+    gsap.set(dots[2], { x: vw + 120,     y: BY, opacity: 0 });
+    gsap.set(panel, { clipPath: clip(0) });
     contentRefs.current.forEach(c => c && (c.style.opacity = '0'));
 
-    // Max radius to cover full panel from any ball position
-    const maxR = Math.sqrt(PANEL_W * PANEL_W + PANEL_H * PANEL_H);
+    const ctx = gsap.context(() => {
+      ScrollTrigger.create({
+        trigger: wrap,
+        start:   'top top',
+        end:     () => `+=${TOTAL}`,
+        pin:     true,
+        anticipatePin: 1,
+        invalidateOnRefresh: true,
+        scrub:   1,
+        onUpdate(self) {
+          const scrolled = self.progress * TOTAL;
 
-    ScrollTrigger.create({
-      trigger: expand,
-      start:   'top top',
-      end:     `+=${TOTAL}`,
-      pin:     true,
-      scrub:   1.2,
-      onUpdate(self) {
-        const raw = self.progress * services.length;
-        const idx = Math.min(services.length - 1, Math.floor(raw));
-        const sp  = raw - idx; // 0→1 within current service
+          // ── Phase 1: horizontal scroll ──────────────────────────────
+          gsap.set(track, { x: -Math.min(SCROLL_AMT, scrolled) });
 
-        const op = opening(idx);
-        const wa = waiting(idx);
-        const en = entering(idx);
+          if (scrolled <= SCROLL_AMT) {
+            dots.forEach(d => gsap.set(d, { opacity: 0 }));
+            gsap.set(panel, { clipPath: clip(0) });
+            contentRefs.current.forEach(c => c && (c.style.opacity = '0'));
+            return;
+          }
 
-        const isFirst = idx === 0;
+          // Hide hero landing dot
+          const landingDot = document.getElementById('hero-landing-dot');
+          if (landingDot) landingDot.style.opacity = '0';
 
-        // Phase breakpoints
-        const PH_SLIDE = isFirst ? 0.12 : 0;
-        const PH_EXP   = PH_SLIDE + 0.18;
-        const PH_SHOW  = PH_EXP   + 0.44;  // longer open time
-        const PH_CLOSE = PH_SHOW  + 0.16;
-        // EXIT: PH_CLOSE → 1.0
+          const afterScroll = scrolled - SCROLL_AMT;
 
-        // Reset content
-        contentRefs.current.forEach((c, i) => c && (c.style.opacity = i === idx ? '' : '0'));
+          // ── Phase 2: initial slide (service 0 setup) ─────────────────
+          if (afterScroll < S0_SLIDE) {
+            const t = eIO(afterScroll / S0_SLIDE);
+            gsap.set(dots[0], { x: lerp(START_X, LEFT_X, t),  y: BY, opacity: 1 });
+            gsap.set(dots[1], { x: lerp(vw + 60, RIGHT_X, t), y: BY, opacity: t });
+            gsap.set(dots[2], { opacity: 0 });
+            gsap.set(panel, { clipPath: clip(0) });
+            contentRefs.current.forEach(c => c && (c.style.opacity = '0'));
+            return;
+          }
 
-        // clip-path origin = center of opening dot
-        const ox = OPEN_X + 10;
-        const oy = BY + 10;
-        const clip = r => `circle(${r}px at ${ox}px ${oy}px)`;
+          // ── Phases 3+: service cycles ─────────────────────────────────
+          const afterInitSlide = afterScroll - S0_SLIDE;
 
-        // ── SLIDE (service 0 only) ──────────────────────────────────────
-        if (isFirst && sp < PH_SLIDE) {
-          const t = eIO(sp / PH_SLIDE);
-          gsap.set(op, { x: lerp(vw / 2 - 10, OPEN_X, t), y: BY, opacity: 1 });
-          gsap.set(wa, { x: lerp(vw * 0.85, WAIT_X, t), y: BY, opacity: t });
-          gsap.set(en, { opacity: 0 });
+          // Which service are we on?
+          const idx = Math.min(services.length - 1, Math.floor(afterInitSlide / SVC_BUDGET));
+          const sp  = afterInitSlide - idx * SVC_BUDGET; // 0→SVC_BUDGET within service
+
+          const ld = leftDot(idx);
+          const rd = rightDot(idx);
+          const nd = newDot(idx);
+
+          // Only current service content visible
+          contentRefs.current.forEach((c, i) => c && (c.style.opacity = i === idx ? '' : '0'));
+
+          // ── EXPAND ───────────────────────────────────────────────────
+          if (sp < S_EXPAND) {
+            const t = eIO(sp / S_EXPAND);
+            gsap.set(ld, { x: LEFT_X,  y: BY, opacity: 0 });
+            gsap.set(rd, { x: RIGHT_X, y: BY, opacity: 1 });
+            gsap.set(nd, { opacity: 0 });
+            gsap.set(panel, { clipPath: clip(lerp(0, maxR, t)) });
+            if (contentRefs.current[idx])
+              contentRefs.current[idx].style.opacity = String(Math.max(0, (t - 0.6) / 0.4));
+            return;
+          }
+
+          // ── SHOW ─────────────────────────────────────────────────────
+          if (sp < S_EXPAND + S_SHOW) {
+            gsap.set(ld, { opacity: 0 });
+            gsap.set(rd, { x: RIGHT_X, y: BY, opacity: 1 });
+            gsap.set(nd, { opacity: 0 });
+            gsap.set(panel, { clipPath: clip(maxR) });
+            if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '1';
+            return;
+          }
+
+          // ── CLOSE ────────────────────────────────────────────────────
+          if (sp < S_EXPAND + S_SHOW + S_CLOSE) {
+            const t = eIO((sp - S_EXPAND - S_SHOW) / S_CLOSE);
+            gsap.set(ld, { x: LEFT_X,  y: BY, opacity: 0 });
+            gsap.set(rd, { x: RIGHT_X, y: BY, opacity: 1 });
+            gsap.set(nd, { opacity: 0 });
+            gsap.set(panel, { clipPath: clip(lerp(maxR, 0, t)) });
+            if (contentRefs.current[idx])
+              contentRefs.current[idx].style.opacity = String(Math.max(0, 1 - t / 0.4));
+            return;
+          }
+
+          // ── EXIT SLIDE (not for last service) ────────────────────────
           gsap.set(panel, { clipPath: clip(0) });
           if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '0';
-          return;
-        }
 
-        // ── EXPAND: circle grows from dot to cover full panel ────────────
-        if (sp < PH_EXP) {
-          const t = eIO((sp - PH_SLIDE) / 0.28);
-          gsap.set(en, { x: vw + 20, y: BY, opacity: 0 });
-          gsap.set(op, { opacity: 0 });
-          gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
-          gsap.set(panel, { clipPath: clip(lerp(10, maxR, t)) });
-          const ct = Math.max(0, (t - 0.72) / 0.28);
-          if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = ct;
-          return;
-        }
+          if (idx < services.length - 1) {
+            const t = eIO((sp - S_EXPAND - S_SHOW - S_CLOSE) / S_EXIT);
+            gsap.set(ld, { x: lerp(LEFT_X,  -50,    t), y: BY, opacity: lerp(1, 0, t) });
+            gsap.set(rd, { x: lerp(RIGHT_X, LEFT_X, t), y: BY, opacity: 1 });
+            gsap.set(nd, { x: lerp(vw + 60, RIGHT_X, t), y: BY, opacity: t });
+          } else {
+            // Last service done — show left dot reappear at LEFT_X
+            gsap.set(ld, { x: LEFT_X,  y: BY, opacity: 1 });
+            gsap.set(rd, { x: RIGHT_X, y: BY, opacity: 1 });
+            gsap.set(nd, { opacity: 0 });
+          }
+        },
+      });
+    }, wrap);
 
-        // ── SHOW ────────────────────────────────────────────────────────
-        if (sp < PH_SHOW) {
-          gsap.set(en, { opacity: 0 });
-          gsap.set(op, { opacity: 0 });
-          gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
-          gsap.set(panel, { clipPath: clip(maxR) });
-          if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '1';
-          return;
-        }
-
-        // ── CLOSE: circle shrinks back to dot ───────────────────────────
-        if (sp < PH_CLOSE) {
-          const t = eIO((sp - PH_SHOW) / 0.22);
-          gsap.set(en, { opacity: 0 });
-          gsap.set(op, { opacity: 0 });
-          gsap.set(wa, { x: WAIT_X, y: BY, opacity: 1 });
-          gsap.set(panel, { clipPath: clip(lerp(maxR, 10, t)) });
-          const ct = Math.max(0, 1 - t / 0.3);
-          if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = ct;
-          return;
-        }
-
-        // ── EXIT / SLIDE ─────────────────────────────────────────────────
-        const t = eIO((sp - PH_CLOSE) / (1 - PH_CLOSE));
-        const hasNext = idx < services.length - 1;
-
-        gsap.set(panel, { clipPath: clip(0) });
-        gsap.set(op, { x: lerp(OPEN_X, -40, t), y: BY, opacity: 1 });
-        gsap.set(wa, { x: lerp(WAIT_X, OPEN_X, t), y: BY, opacity: 1 });
-        if (hasNext) {
-          gsap.set(en, { x: lerp(vw + 20, WAIT_X, t), y: BY, opacity: t });
-        } else {
-          gsap.set(en, { opacity: 0 });
-        }
-        if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '0';
-      },
-    });
-
-    return () => hCtx.revert();
+    return () => ctx.revert();
   }, []);
 
   return (
-    <>
-      {/* ── Horizontal scroll: About + Services title ── */}
-      <div className="services-wrap" id="services" ref={wrapRef}>
-        <div className="services-track" ref={trackRef}>
+    <div className="services-wrap" id="services" ref={wrapRef}>
 
-          <div className="services-panel services-panel-white" id="about">
-            <p className="about-label">// About</p>
-            <p className="about-text" ref={aboutTxtRef} />
-          </div>
-
+      {/* Horizontal track */}
+      <div className="services-track" ref={trackRef}>
+        <div className="services-panel services-panel-white" id="about">
+          <p className="about-label">// About</p>
+          <p className="about-text" ref={aboutTxtRef} />
         </div>
-      </div>
-
-      {/* ── Service expand section (6 balls) ── */}
-      <div ref={expandRef} className="service-expand-section">
-
-        {/* Static title — bottom right, never moves */}
-        <div className="service-expand-title">
+        <div className="services-panel services-panel-title">
           <span className="services-eyebrow">What We Do</span>
           <h2 className="services-big-title">Services</h2>
+          <span className="services-hint">↓ scroll</span>
         </div>
-
-        {/* Expanding black panel */}
-        <div ref={panelRef} className="service-black-panel">
-          {services.map((s, i) => (
-            <div
-              key={s.num}
-              ref={el => contentRefs.current[i] = el}
-              className="service-content-inner"
-              style={{ opacity: 0 }}
-            >
-              <span className="sc-num">{s.num}</span>
-              <h3 className="sc-name">{s.name}</h3>
-              <p className="sc-desc">{s.desc}</p>
-            </div>
-          ))}
-        </div>
-
-        {/* Three rotating dots */}
-        <div ref={dot0Ref} className="service-dot" />
-        <div ref={dot1Ref} className="service-dot" />
-        <div ref={dot2Ref} className="service-dot" />
-
       </div>
 
-    </>
+      {/* Expanding panel with all service content */}
+      <div ref={panelRef} className="service-black-panel">
+        {services.map((s, i) => (
+          <div
+            key={s.num}
+            ref={el => contentRefs.current[i] = el}
+            className="service-content-inner"
+            style={{ opacity: 0 }}
+          >
+            <span className="sc-num">{s.num}</span>
+            <h3 className="sc-name">{s.name}</h3>
+            <p className="sc-desc">{s.desc}</p>
+          </div>
+        ))}
+      </div>
+
+      {/* Three rotating dots */}
+      <div ref={dot0Ref} className="service-dot" />
+      <div ref={dot1Ref} className="service-dot" />
+      <div ref={dot2Ref} className="service-dot" />
+
+    </div>
   );
 }
