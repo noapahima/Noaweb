@@ -60,7 +60,7 @@ export default function Contact() {
 
       {status === 'done' ? (
         <p className="form-success">
-          Message received — we'll be in touch shortly.
+          Message received - we'll be in touch shortly.
         </p>
       ) : (
         <form

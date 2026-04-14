@@ -4,12 +4,12 @@ import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
 gsap.registerPlugin(ScrollTrigger);
 
-const aboutText = "We are Noa Software Solutions — a boutique studio crafting custom technology that gives businesses an unfair advantage. From AI-powered workflows to pixel-perfect interfaces, we turn ambitious ideas into real products that scale.";
+const aboutText = "We are Noa Software Solutions - a boutique studio crafting custom technology that gives businesses an unfair advantage. From AI-powered workflows to pixel-perfect interfaces, we turn ambitious ideas into real products that scale.";
 
 const services = [
   { num: '01', name: 'Custom CRM',             desc: 'Bespoke lead management, automated pipelines, and advanced analytics tailored to your exact business needs.' },
   { num: '02', name: 'Business Automations',   desc: 'End-to-end workflow optimization using Zapier, Make, and custom API integrations to eliminate manual tasks.' },
-  { num: '03', name: 'Web Development',        desc: 'High-performance, responsive websites built with React and Next.js — focusing on speed and stunning UI/UX.' },
+  { num: '03', name: 'Web Development',        desc: 'High-performance, responsive websites built with React and Next.js - focusing on speed and stunning UI/UX.' },
   { num: '04', name: 'Mobile Applications',    desc: 'Premium cross-platform apps for iOS and Android using React Native and Flutter.' },
   { num: '05', name: 'AI Integration',         desc: "Smart agents, LLM-based workflows, and custom chatbots that boost your team's productivity." },
   { num: '06', name: 'Cloud & Infrastructure', desc: 'Scalable cloud architecture on AWS/GCP, DevOps pipelines, and security-first deployments.' },
@@ -219,7 +219,7 @@ export default function Services() {
             const STEP = RIGHT_X - LEFT_X;
             const X0   = RIGHT_X;
             const X1   = RIGHT_X - STEP * 0.5;   // after bounce 1
-            const X2   = RIGHT_X - STEP * 0.85;  // after bounce 2
+            const X2   = RIGHT_X - STEP * 1.0;   // after bounce 2
             const DEST = vh + 60;                 // off-screen below
 
             const P_HIT = 0.14;  // fall lands on TEXT_Y
