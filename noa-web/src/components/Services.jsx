@@ -153,10 +153,10 @@ export default function Services() {
           // ── EXPAND ───────────────────────────────────────────────────
           if (sp < S_EXPAND) {
             const t = eIO(sp / S_EXPAND);
-            gsap.set(ld, { x: LEFT_X,  y: BY, opacity: 0 });
+            gsap.set(ld, { x: LEFT_X,  y: BY, opacity: 1 });
             gsap.set(rd, { x: RIGHT_X, y: BY, opacity: 1 });
             gsap.set(nd, { opacity: 0 });
-            gsap.set(panel, { clipPath: clip(lerp(0, maxR, t)) });
+            gsap.set(panel, { clipPath: clip(lerp(10, maxR, t)) });
             if (contentRefs.current[idx])
               contentRefs.current[idx].style.opacity = String(Math.max(0, (t - 0.6) / 0.4));
             return;
