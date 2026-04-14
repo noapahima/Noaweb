@@ -220,7 +220,7 @@ export default function Services() {
             const X0   = RIGHT_X;
             const X1   = RIGHT_X - STEP * 0.5;   // after bounce 1
             const X2   = RIGHT_X - STEP * 1.0;   // after bounce 2
-            const DEST = vh + 60;                 // off-screen below
+            const DEST = 2 * vh - TEXT_Y;         // ball at vh → exactly half white half black
 
             const P_HIT = 0.14;  // fall lands on TEXT_Y
             const P_B1  = 0.38;  // bounce 1 complete
@@ -252,7 +252,11 @@ export default function Services() {
               y = TEXT_Y - H * 4 * f * (1 - f);
             }
 
-            gsap.set(rd, { x, y, opacity: 1 });
+            gsap.set(rd, { x, y, opacity: 1, background: y >= vh ? '#fff' : '#000' });
+
+            // Wrap scrolls with ball: TEXT_Y→0, DEST→-vh
+            const fallProg = Math.max(0, (y - TEXT_Y) / (DEST - TEXT_Y));
+            gsap.set(wrap, { y: -fallProg * vh });
           }
         },
       });

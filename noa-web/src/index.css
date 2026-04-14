@@ -535,7 +535,7 @@ a { color: inherit; text-decoration: none; }
 .services-wrap {
   width: 100%;
   height: 100vh;
-  overflow: hidden;
+  overflow: visible;
   background: #fff;
   position: relative;
 }

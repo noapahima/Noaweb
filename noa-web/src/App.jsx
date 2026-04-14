@@ -7,7 +7,6 @@ import Cursor from './components/Cursor';
 import Nav from './components/Nav';
 import Hero from './components/Hero';
 import Services from './components/Services';
-import Stats from './components/Stats';
 import Contact from './components/Contact';
 import Footer from './components/Footer';
 import Loader from './components/Loader';
@@ -40,7 +39,7 @@ export default function App() {
       <Nav />
       <Hero />
       <Services />
-      <Stats />
+      <div style={{ width: '100%', height: '100vh', background: '#000' }} />
       <Contact />
       <Footer />
     </>
