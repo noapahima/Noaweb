@@ -61,7 +61,7 @@ export default function Services() {
     const BY      = vh / 2 - 10;
 
     // Panel clip-path from LEFT_X
-    const PANEL_W = vw * 0.80;
+    const PANEL_W = vw * 0.73;
     const PANEL_H = vh;
     const OX  = LEFT_X + 10;
     const OY  = BY + 10;
@@ -82,8 +82,13 @@ export default function Services() {
     const S_EXPAND   = vw * 0.8;
     const S_SHOW     = vw * 1.2;
     const S_CLOSE    = vw * 0.8;
-    const S_EXIT     = vw * 0.7;   // transition between services
-    const S_FALL     = vw * 1.0;   // last dot falls to contact
+    const S_EXIT     = vw * 0.7;
+    const S_FALL     = vw * 1.4;   // last dot: fall → bounce → left → contact
+
+    // Y position of top of "Services" big title — computed from bottom
+    // panel has padding-bottom 4rem (64px), font is 18vw line-height 0.85
+    const FONT_H = Math.min(vw * 0.18, 288) * 0.85;
+    const TEXT_Y = vh - 64 - FONT_H + 10; // top edge of text + small offset
     const SVC_BUDGET = S_EXPAND + S_SHOW + S_CLOSE + S_EXIT;
     const TOTAL = SCROLL_AMT + S0_SLIDE
       + services.length * (S_EXPAND + S_SHOW + S_CLOSE)
@@ -197,21 +202,36 @@ export default function Services() {
             gsap.set(rd, { x: lerp(RIGHT_X,          LEFT_X,         t), y: BY, opacity: 1 });
             gsap.set(nd, { x: lerp(RIGHT_X + DIST,   RIGHT_X,        t), y: BY, opacity: 1 });
           } else {
-            // Last service: slide to LEFT_X then fall — single easing over whole path
-            const raw = (sp - S_EXPAND - S_SHOW - S_CLOSE) / S_FALL;
-            const t   = Math.min(1, raw); // linear — same speed throughout
-            const SLIDE_END = 0.55;
+            // Last dot: fall onto "Services" text → arc-bounce left → fall to contact
+            const t = Math.min(1, (sp - S_EXPAND - S_SHOW - S_CLOSE) / S_FALL);
             gsap.set(ld, { opacity: 0 });
             gsap.set(nd, { opacity: 0 });
-            gsap.set(rd, {
-              x: t <= SLIDE_END
-                ? lerp(RIGHT_X, LEFT_X, t / SLIDE_END)
-                : LEFT_X,
-              y: t <= SLIDE_END
-                ? BY
-                : lerp(BY, vh + 40, (t - SLIDE_END) / (1 - SLIDE_END)),
-              opacity: t > 0.85 ? lerp(1, 0, (t - 0.85) / 0.15) : 1,
-            });
+
+            // Phase breakpoints
+            const P_HIT  = 0.28;  // fall straight down to text
+            const P_ARC  = 0.60;  // parabolic arc left (bounce off text)
+            const P_DROP = 1.00;  // fall down to contact from LEFT_X
+
+            let x, y;
+            if (t < P_HIT) {
+              // Straight fall onto Services text
+              const f = t / P_HIT;
+              x = RIGHT_X;
+              y = lerp(BY, TEXT_Y, f);
+            } else if (t < P_ARC) {
+              // Parabolic arc: x goes RIGHT_X → LEFT_X, y arcs up then back to TEXT_Y
+              const f = (t - P_HIT) / (P_ARC - P_HIT);
+              x = lerp(RIGHT_X, LEFT_X, f);
+              // Arc: peak in middle, lands back at TEXT_Y
+              y = TEXT_Y - 160 * 4 * f * (1 - f);
+            } else {
+              // Fall straight down to contact
+              const f = (t - P_ARC) / (P_DROP - P_ARC);
+              x = LEFT_X;
+              y = lerp(TEXT_Y, vh + 40, f);
+            }
+
+            gsap.set(rd, { x, y, opacity: 1 });
           }
         },
       });
