@@ -57,7 +57,7 @@ export default function Services() {
     // Positions
     const START_X = vw / 2 - 10;     // hero ball center
     const LEFT_X  = vw * 0.20 - 10;
-    const RIGHT_X = vw * 0.72 - 10;
+    const RIGHT_X = vw * 0.85 - 10;
     const BY      = vh / 2 - 10;
 
     // Panel clip-path from LEFT_X
