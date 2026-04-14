@@ -78,15 +78,17 @@ export default function Services() {
 
     // Scroll budgets
     const SCROLL_AMT = track.scrollWidth - vw;
-    const S0_SLIDE   = vw * 0.7;   // initial slide (service 0 only)
+    const S0_SLIDE   = vw * 0.7;
     const S_EXPAND   = vw * 0.8;
     const S_SHOW     = vw * 1.2;
     const S_CLOSE    = vw * 0.8;
     const S_EXIT     = vw * 0.7;   // transition between services
-    const SVC_BUDGET = S_EXPAND + S_SHOW + S_CLOSE + S_EXIT; // per service (with exit)
+    const S_FALL     = vw * 1.0;   // last dot falls to contact
+    const SVC_BUDGET = S_EXPAND + S_SHOW + S_CLOSE + S_EXIT;
     const TOTAL = SCROLL_AMT + S0_SLIDE
       + services.length * (S_EXPAND + S_SHOW + S_CLOSE)
-      + (services.length - 1) * S_EXIT;
+      + (services.length - 1) * S_EXIT
+      + S_FALL;
 
     // Initial state — all dots hidden, panel closed
     gsap.set(dots[0], { x: START_X,      y: BY, opacity: 0 });
@@ -182,20 +184,34 @@ export default function Services() {
             return;
           }
 
-          // ── EXIT SLIDE (not for last service) ────────────────────────
+          // ── EXIT / FALL ───────────────────────────────────────────────
           gsap.set(panel, { clipPath: clip(0) });
           if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '0';
 
           if (idx < services.length - 1) {
+            // Normal exit: slide left, bring in new dot
             const t = eIO((sp - S_EXPAND - S_SHOW - S_CLOSE) / S_EXIT);
-            gsap.set(ld, { x: lerp(LEFT_X,  -50,    t), y: BY, opacity: lerp(1, 0, t) });
-            gsap.set(rd, { x: lerp(RIGHT_X, LEFT_X, t), y: BY, opacity: 1 });
+            gsap.set(ld, { x: lerp(LEFT_X,   -50,    t), y: BY, opacity: lerp(1, 0, t) });
+            gsap.set(rd, { x: lerp(RIGHT_X, LEFT_X,  t), y: BY, opacity: 1 });
             gsap.set(nd, { x: lerp(vw + 60, RIGHT_X, t), y: BY, opacity: t });
           } else {
-            // Last service done — show left dot reappear at LEFT_X
-            gsap.set(ld, { x: LEFT_X,  y: BY, opacity: 1 });
-            gsap.set(rd, { x: RIGHT_X, y: BY, opacity: 1 });
+            // Last service: right dot slides all the way to LEFT_X, then falls
+            const raw = (sp - S_EXPAND - S_SHOW - S_CLOSE) / S_FALL;
+            const t   = Math.min(1, raw);
+            const SLIDE_END = 0.55;  // first 55% = slide to LEFT_X
+            gsap.set(ld, { opacity: 0 });
             gsap.set(nd, { opacity: 0 });
+            if (t <= SLIDE_END) {
+              const ts = eIO(t / SLIDE_END);
+              gsap.set(rd, { x: lerp(RIGHT_X, LEFT_X, ts), y: BY, opacity: 1 });
+            } else {
+              const tf = eIO((t - SLIDE_END) / (1 - SLIDE_END));
+              gsap.set(rd, {
+                x: LEFT_X,
+                y: lerp(BY, vh + 40, tf),
+                opacity: tf > 0.75 ? lerp(1, 0, (tf - 0.75) / 0.25) : 1,
+              });
+            }
           }
         },
       });
