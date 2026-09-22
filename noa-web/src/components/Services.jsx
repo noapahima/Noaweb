@@ -1,6 +1,7 @@
 import { useEffect, useRef } from 'react';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
+import ServiceVisual from './ServiceVisual';
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -14,6 +15,9 @@ const services = [
   { num: '05', name: 'AI Integration',         desc: "Smart agents, LLM-based workflows, and custom chatbots that boost your team's productivity." },
   { num: '06', name: 'Cloud & Infrastructure', desc: 'Scalable cloud architecture on AWS/GCP, DevOps pipelines, and security-first deployments.' },
 ];
+
+const themeBlack = () => getComputedStyle(document.documentElement).getPropertyValue('--black').trim() || '#000';
+const themeWhite = () => getComputedStyle(document.documentElement).getPropertyValue('--white').trim() || '#fff';
 
 export default function Services() {
   const wrapRef     = useRef(null);
@@ -31,7 +35,7 @@ export default function Services() {
     if (el) {
       el.innerHTML = aboutText
         .split(' ')
-        .map(w => `<span class="about-word" style="display:inline-block;white-space:pre;color:#111;">${w} </span>`)
+        .map(w => `<span class="about-word" style="display:inline-block;white-space:pre;">${w} </span>`)
         .join('');
       gsap.set(el.querySelectorAll('.about-word'), { x: 300, opacity: 0 });
       ScrollTrigger.create({
@@ -109,13 +113,14 @@ export default function Services() {
         onUpdate(self) {
           const scrolled = self.progress * TOTAL;
 
-          // ── Phase 1: horizontal scroll ──────────────────────────────
+          // ── Phase 1: horizontal scroll (white background visible) ───
           gsap.set(track, { x: -Math.min(SCROLL_AMT, scrolled) });
 
           if (scrolled <= SCROLL_AMT) {
             dots.forEach(d => gsap.set(d, { opacity: 0 }));
             gsap.set(panel, { clipPath: clip(0) });
             contentRefs.current.forEach(c => c && (c.style.opacity = '0'));
+            document.body.classList.add('bg-light');
             return;
           }
 
@@ -165,7 +170,7 @@ export default function Services() {
           // ── SHOW ─────────────────────────────────────────────────────
           if (sp < S_EXPAND + S_SHOW) {
             gsap.set(ld, { opacity: 0 });
-            gsap.set(rd, { x: RIGHT_X, y: BY, opacity: 1 });
+            gsap.set(rd, { opacity: 0 });
             gsap.set(nd, { opacity: 0 });
             gsap.set(panel, { clipPath: clip(maxR) });
             if (contentRefs.current[idx]) contentRefs.current[idx].style.opacity = '1';
@@ -252,7 +257,8 @@ export default function Services() {
               y = TEXT_Y - H * 4 * f * (1 - f);
             }
 
-            gsap.set(rd, { x, y, opacity: 1, background: y >= vh ? '#fff' : '#000' });
+            // y >= vh means ball crossed into black contact section
+            gsap.set(rd, { x, y, opacity: 1, background: y >= vh ? themeWhite() : themeBlack() });
 
             // Wrap scrolls with ball: TEXT_Y→0, DEST→-vh
             const fallProg = Math.max(0, (y - TEXT_Y) / (DEST - TEXT_Y));
@@ -290,9 +296,12 @@ export default function Services() {
             className="service-content-inner"
             style={{ opacity: 0 }}
           >
-            <span className="sc-num">{s.num}</span>
-            <h3 className="sc-name">{s.name}</h3>
-            <p className="sc-desc">{s.desc}</p>
+            <ServiceVisual index={i} />
+            <div className="sc-text">
+              <span className="sc-num">{s.num}</span>
+              <h3 className="sc-name">{s.name}</h3>
+              <p className="sc-desc">{s.desc}</p>
+            </div>
           </div>
         ))}
       </div>
