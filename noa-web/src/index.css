@@ -1060,6 +1060,25 @@ a { color: inherit; text-decoration: none; }
   pointer-events: none;
   will-change: transform;
   opacity: 0;
+  box-shadow:
+    0 0 26px 6px rgba(80, 170, 255, 0.45),
+    0 0 60px 14px rgba(140, 100, 255, 0.22),
+    inset -4px -4px 7px rgba(0, 0, 0, 0.4),
+    inset 3px 4px 7px rgba(255, 255, 255, 0.65);
+  animation:
+    dot-iridescent 5s linear infinite,
+    dot-breathe 1.7s ease-in-out infinite;
+}
+
+@keyframes dot-iridescent {
+  0%   { filter: hue-rotate(0deg)   saturate(1.2); }
+  50%  { filter: hue-rotate(180deg) saturate(1.65); }
+  100% { filter: hue-rotate(360deg) saturate(1.2); }
+}
+
+@keyframes dot-breathe {
+  0%, 100% { scale: 1; }
+  50%      { scale: 1.14; }
 }
 
 /* Service item panel */
