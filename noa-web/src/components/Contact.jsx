@@ -45,7 +45,8 @@ export default function Contact() {
         'SfnGnRTujuun0G0v8'
       );
       setStatus('done');
-    } catch {
+    } catch (err) {
+      console.error('EmailJS send failed:', err);
       setStatus('error');
     }
   };

@@ -14,6 +14,7 @@ const services = [
   { num: '04', name: 'Mobile Applications',    desc: 'Premium cross-platform apps for iOS and Android using React Native and Flutter.' },
   { num: '05', name: 'AI Integration',         desc: "Smart agents, LLM-based workflows, and custom chatbots that boost your team's productivity." },
   { num: '06', name: 'Cloud & Infrastructure', desc: 'Scalable cloud architecture on AWS/GCP, DevOps pipelines, and security-first deployments.' },
+  { num: '07', name: 'AI Agent Builder',      desc: 'Autonomous AI agents that reason, use tools, and execute multi-step workflows - built and orchestrated end-to-end.' },
 ];
 
 const themeBlack = () => getComputedStyle(document.documentElement).getPropertyValue('--black').trim() || '#000';

@@ -423,7 +423,105 @@ function CloudVisual() {
   return <canvas ref={useCanvas(draw)} className="svc-canvas"/>;
 }
 
-const VISUALS = [CRMVisual, AutoVisual, WebVisual, MobileVisual, AIVisual, CloudVisual];
+/* ═══════════════════════════════════════════════════════════════════
+   07  AI Agent Builder — ORBITING SPHERE CLUSTER
+   A glossy central "builder" core spawns 7 satellite agent-balls that
+   orbit it on tilted elliptical paths at different depths. Each ball
+   is shaded like a real sphere (radial gradient + rim light) and
+   z-sorted for proper depth. Thin tethers link core → agents. The
+   core drifts gently toward the mouse, like you're steering the swarm.
+   ══════════════════════════════════════════════════════════════════ */
+function AgentVisual() {
+  const S = useRef(null);
+  const draw = (ctx, t, m) => {
+    ctx.fillStyle = 'rgba(0,0,0,0.22)'; ctx.fillRect(0, 0, W, H);
+
+    const cx = W / 2, cy = H / 2;
+
+    if (!S.current) {
+      S.current = {
+        hub: { x: cx, y: cy },
+        agents: Array.from({ length: 7 }, (_, i) => ({
+          rx:    150 + (i % 3) * 48,
+          ry:    46  + (i % 4) * 14,
+          tilt:  (i / 7) * Math.PI,
+          speed: 0.22 + (i % 5) * 0.05,
+          phase: (i / 7) * Math.PI * 2,
+          size:  7 + (i % 3) * 2.5,
+          hue:   200 + i * 18,
+        })),
+      };
+    }
+    const { hub, agents } = S.current;
+
+    // Hub gently follows the mouse
+    hub.x += ((cx + (m.x - cx) * 0.35) - hub.x) * 0.04;
+    hub.y += ((cy + (m.y - cy) * 0.35) - hub.y) * 0.04;
+
+    const drawBall = (x, y, r, z, hue) => {
+      const scale = 0.55 + 0.45 * ((z + 1) / 2);
+      const rad   = r * scale;
+      const alpha = 0.5 + 0.5 * ((z + 1) / 2);
+
+      // soft glow beneath
+      const glow = ctx.createRadialGradient(x, y, 0, x, y, rad * 2.6);
+      glow.addColorStop(0, `hsla(${hue},90%,65%,${alpha * 0.28})`);
+      glow.addColorStop(1, 'hsla(0,0%,0%,0)');
+      ctx.fillStyle = glow;
+      ctx.beginPath(); ctx.arc(x, y, rad * 2.6, 0, Math.PI * 2); ctx.fill();
+
+      // glossy sphere body — light source upper-left
+      const body = ctx.createRadialGradient(
+        x - rad * 0.35, y - rad * 0.35, rad * 0.1,
+        x, y, rad
+      );
+      body.addColorStop(0,   `hsla(${hue},95%,80%,${alpha})`);
+      body.addColorStop(0.5, `hsla(${hue},85%,55%,${alpha})`);
+      body.addColorStop(1,   `hsla(${hue},80%,22%,${alpha})`);
+      ctx.fillStyle = body;
+      ctx.beginPath(); ctx.arc(x, y, rad, 0, Math.PI * 2); ctx.fill();
+
+      // rim light
+      ctx.beginPath();
+      ctx.arc(x, y, rad, Math.PI * 0.95, Math.PI * 1.55);
+      ctx.strokeStyle = `hsla(${hue},100%,90%,${alpha * 0.5})`;
+      ctx.lineWidth = rad * 0.18;
+      ctx.stroke();
+    };
+
+    // Compute agent positions + z depth
+    const positioned = agents.map(a => {
+      const ang = t * a.speed + a.phase;
+      const ex  = Math.cos(ang) * a.rx;
+      const ey0 = Math.sin(ang) * a.ry;
+      const ct  = Math.cos(a.tilt), st = Math.sin(a.tilt);
+      const x   = hub.x + ex * ct - ey0 * st * 0.3;
+      const y   = hub.y + ex * st * 0.25 + ey0 * ct;
+      const z   = Math.sin(ang + a.tilt);
+      return { ...a, x, y, z };
+    });
+
+    // Tethers: hub → each agent
+    for (const p of positioned) {
+      const d = Math.hypot(p.x - hub.x, p.y - hub.y);
+      ctx.beginPath();
+      ctx.moveTo(hub.x, hub.y);
+      ctx.lineTo(p.x, p.y);
+      ctx.strokeStyle = `hsla(${p.hue},80%,70%,${0.10 + 0.10 * ((p.z + 1) / 2)})`;
+      ctx.lineWidth = 1;
+      ctx.stroke();
+      void d;
+    }
+
+    // Depth-sort: back to front, hub drawn among them at z=0
+    const all = [...positioned, { x: hub.x, y: hub.y, size: 16, hue: 195, z: 0, isHub: true }];
+    all.sort((a, b) => a.z - b.z);
+    for (const p of all) drawBall(p.x, p.y, p.size, p.z, p.hue);
+  };
+  return <canvas ref={useCanvas(draw)} className="svc-canvas"/>;
+}
+
+const VISUALS = [CRMVisual, AutoVisual, WebVisual, MobileVisual, AIVisual, CloudVisual, AgentVisual];
 export default function ServiceVisual({ index }) {
   const V = VISUALS[index] ?? (() => null);
   return <div className="svc-visual-wrap"><V /></div>;
